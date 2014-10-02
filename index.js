@@ -4,6 +4,8 @@ var request = require('request');
 var async = require('async');
 
 var jar = request.jar();
+var companyId;
+var advertiserId;
 
 var requestJSON = function(url, cookieJar, cb) {
   request({
@@ -20,7 +22,7 @@ var requestJSON = function(url, cookieJar, cb) {
 };
 
 async.waterfall([
-  function(cb) {
+  function retrieveAutehnticationCookie(cb) {
     request({
       url: 'https://members.cj.com/member/foundation/memberlogin.do',
       method: 'POST',
@@ -31,13 +33,17 @@ async.waterfall([
       }
     }, cb);
   },
-  function(res, body, cb) {
-    var url = 'https://members.cj.com/member/publisher/4406512/advertisers.json';
+  function getAllAdvertisers(res, body, cb) {
+    var companyIdCookie = jar.store.idx['cj.com']['/'].jsCompanyId;
+    companyId = companyIdCookie.toString().match(/jsCompanyId=(\d*?);/)[1];
+
+    var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertisers.json';
+
     requestJSON(url, jar, cb);
   },
-  function(body, cb) {
-    var advertiserId = body.advertisers[1].advertiserId;
-    console.log(advertiserId);
+  function retrieveBasicInformations(body, cb) {
+    var advertiser = body.advertisers[1];
+    advertiserId = advertiser.advertiserId;
 
     async.parallel({
       details: function(cb) {
@@ -45,7 +51,7 @@ async.waterfall([
         requestJSON(url, jar, cb);
       },
       comissionByCountry: function(cb) {
-        var url = 'https://members.cj.com/member/api/publisher/4406512/merchant/' + advertiserId + '/commissionsByCountry';
+        var url = 'https://members.cj.com/member/api/publisher/' + companyId + '/merchant/' + advertiserId + '/commissionsByCountry';
         requestJSON(url, jar, cb);
       },
       batchTracking: function(cb) {
@@ -53,10 +59,27 @@ async.waterfall([
         requestJSON(url, jar, cb);
       },
       activeProgramTerms: function(cb) {
-        var url = 'https://members.cj.com/member/publisher/4406512/advertiser/' + advertiserId + '/activeProgramTerms.json';
+        var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiser/' + advertiserId + '/activeProgramTerms.json';
         requestJSON(url, jar, cb);
       },
     }, cb);
+  },
+  function findRemainingInformartionsViaSearch(data, cb) {
+      var advertiserName = data.details.advertiser.organization;
+      var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiserSearch.json?keywords=' + encodeURIComponent(advertiserName);
+      requestJSON(url, jar, function(err, res) {
+        if (err) {
+          return cb(err);
+        }
+
+        res.advertisers.forEach(function(advertiser) {
+          if (advertiser.advertiserId === advertiserId) {
+            data.full = advertiser;
+          }
+        });
+
+        cb(null, data);
+      });
   }
 ], function(err, res){
   console.log(res);
