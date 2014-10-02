@@ -62,6 +62,10 @@ async.waterfall([
         var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiser/' + advertiserId + '/activeProgramTerms.json';
         requestJSON(url, jar, cb);
       },
+      contact: function(cb) {
+        var url = 'https://members.cj.com/member/advertiser/' + advertiserId + '/contact/' + companyId + '.json';
+        requestJSON(url, jar, cb);
+      }
     }, cb);
   },
   function findRemainingInformartionsViaSearch(data, cb) {
