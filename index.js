@@ -5,7 +5,6 @@ var async = require('async');
 
 var jar = request.jar();
 var companyId;
-var advertiserId;
 
 var requestJSON = function(url, cookieJar, cb) {
   request({
@@ -18,6 +17,52 @@ var requestJSON = function(url, cookieJar, cb) {
     }
 
     cb(null, JSON.parse(body));
+  });
+};
+
+var retrieveAdvertiser = function(id, cb) {
+  async.parallel({
+    details: function(cb) {
+      var url = 'https://members.cj.com/member/advertiser/' + id + '/detail.json';
+      requestJSON(url, jar, cb);
+    },
+    comissionByCountry: function(cb) {
+      var url = 'https://members.cj.com/member/api/publisher/' + companyId + '/merchant/' + id + '/commissionsByCountry';
+      requestJSON(url, jar, cb);
+    },
+    batchTracking: function(cb) {
+      var url = 'https://members.cj.com/member/advertiser/' + id + '/batchTracking.json';
+      requestJSON(url, jar, cb);
+    },
+    activeProgramTerms: function(cb) {
+      var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiser/' + id + '/activeProgramTerms.json';
+      requestJSON(url, jar, cb);
+    },
+    contact: function(cb) {
+      var url = 'https://members.cj.com/member/advertiser/' + id + '/contact/' + companyId + '.json';
+      requestJSON(url, jar, cb);
+    }
+  }, function(err, data) {
+    if (err) {
+      return cb(err);
+    }
+
+    var advertiserName = data.details.advertiser.organization;
+    var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiserSearch.json?keywords=' + encodeURIComponent(advertiserName);
+    requestJSON(url, jar, function(err, res) {
+      if (err) {
+        return cb(err);
+      }
+
+      res.advertisers.forEach(function(advertiser) {
+        if (advertiser.advertiserId === id) {
+          data.full = advertiser;
+        }
+      });
+
+      console.log(data);
+      cb();
+    });
   });
 };
 
@@ -42,49 +87,11 @@ async.waterfall([
     requestJSON(url, jar, cb);
   },
   function retrieveBasicInformations(body, cb) {
-    var advertiser = body.advertisers[1];
-    advertiserId = advertiser.advertiserId;
-
-    async.parallel({
-      details: function(cb) {
-        var url = 'https://members.cj.com/member/advertiser/' + advertiserId + '/detail.json';
-        requestJSON(url, jar, cb);
-      },
-      comissionByCountry: function(cb) {
-        var url = 'https://members.cj.com/member/api/publisher/' + companyId + '/merchant/' + advertiserId + '/commissionsByCountry';
-        requestJSON(url, jar, cb);
-      },
-      batchTracking: function(cb) {
-        var url = 'https://members.cj.com/member/advertiser/' + advertiserId + '/batchTracking.json';
-        requestJSON(url, jar, cb);
-      },
-      activeProgramTerms: function(cb) {
-        var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiser/' + advertiserId + '/activeProgramTerms.json';
-        requestJSON(url, jar, cb);
-      },
-      contact: function(cb) {
-        var url = 'https://members.cj.com/member/advertiser/' + advertiserId + '/contact/' + companyId + '.json';
-        requestJSON(url, jar, cb);
-      }
+    async.eachSeries(body.advertisers, function(advertiser, cb) {
+      var advertiserId = advertiser.advertiserId;
+      retrieveAdvertiser(advertiserId, cb);
     }, cb);
-  },
-  function findRemainingInformartionsViaSearch(data, cb) {
-      var advertiserName = data.details.advertiser.organization;
-      var url = 'https://members.cj.com/member/publisher/' + companyId + '/advertiserSearch.json?keywords=' + encodeURIComponent(advertiserName);
-      requestJSON(url, jar, function(err, res) {
-        if (err) {
-          return cb(err);
-        }
-
-        res.advertisers.forEach(function(advertiser) {
-          if (advertiser.advertiserId === advertiserId) {
-            data.full = advertiser;
-          }
-        });
-
-        cb(null, data);
-      });
   }
-], function(err, res){
-  console.log(res);
+], function(err){
+  console.log(err);
 });
