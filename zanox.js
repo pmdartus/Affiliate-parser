@@ -7,6 +7,7 @@ var cheerio = require('cheerio');
 var jar = request.jar();
 var publisherId;
 var adSpaceId;
+var selectedAdvertiser;
 
 async.waterfall([
   function retrieveAutehnticationCookie(cb) {
@@ -92,7 +93,7 @@ async.waterfall([
     cb(null, advertisers);
   },
   function retrieveAdvertiserData(advertisers, cb) {
-    var selectedAdvertiser = advertisers[1];
+    selectedAdvertiser = advertisers[1];
     request({
       url: 'https://marketplace.zanox.com' + selectedAdvertiser.crawleUrl,
       method: 'GET',
@@ -131,6 +132,26 @@ async.waterfall([
       }
     });
     cb(null ,advertiserInfo);
+  },
+  function retrieveKeyFigures(data, cb) {
+    request({
+      url: 'https://marketplace.zanox.com' + selectedAdvertiser.crawleUrl + '/commission-groups',
+      method: 'GET',
+      jar: jar
+    }, function(err, res, body) {
+      if (err) {
+        return cb(err);
+      }
+
+      var $ = cheerio.load(body);
+
+      data.keyFigures = [];
+      $('#merchantKeyFigures li').each(function() {
+        data.keyFigures.push($(this).text());
+      });
+
+      cb(null, data);
+    });
   }
 ], function(err, res){
   console.log(err, res);
