@@ -6,6 +6,7 @@ var cheerio = require('cheerio');
 
 var jar = request.jar();
 var publisherId;
+var adSpaceId;
 
 async.waterfall([
   function retrieveAutehnticationCookie(cb) {
@@ -27,6 +28,7 @@ async.waterfall([
   function getAllAdvertisers(res, body, cb) {
     try {
       publisherId = body.match(/userid":(\d*?)}/)[1];
+      adSpaceId = body.match(/"adspace":{"id":(\w*?),/)[1];
     } catch (e) {
       return cb('Authentication failed!', e);
     }
@@ -88,6 +90,47 @@ async.waterfall([
     });
 
     cb(null, advertisers);
+  },
+  function retrieveAdvertiserData(advertisers, cb) {
+    var selectedAdvertiser = advertisers[1];
+    request({
+      url: 'https://marketplace.zanox.com' + selectedAdvertiser.crawleUrl,
+      method: 'GET',
+      jar: jar
+    }, cb);
+  },
+  function parseAdvertiser(res, body, cb) {
+    var advertiserInfo = {};
+
+    var $ = cheerio.load(body);
+
+    advertiserInfo.name = $('.accountName h1').text();
+    advertiserInfo.id = $('#accountId strong').text();
+
+    advertiserInfo.shortDescription = $('#descriptionShort').text();
+    advertiserInfo.longDescription = $('#descriptionLongContent').text();
+
+    advertiserInfo.contact = {};
+    advertiserInfo.contact.name = $('#profileContactContent #name').text();
+    advertiserInfo.contact.tel = $('#profileContactContent #tel').text() || $('#profileContactContent #mob').text();
+    advertiserInfo.contact.email = $('#profileContactContent .tooltipTextContent').text();
+
+    advertiserInfo.mobileOptimized = $('.mobileIcon').text();
+
+    advertiserInfo.details = [];
+    $('#programmeDetails .tick').each(function() {
+      advertiserInfo.details.push($(this).text());
+    });
+
+    $('#profileLinksContent a').each(function() {
+      if ($(this).text().trim() === 'Site Web') {
+        advertiserInfo.url = $(this).attr('href');
+      } else {
+        advertiserInfo.links = advertiserInfo.links || [];
+        advertiserInfo.links.push($(this).attr('href'));
+      }
+    });
+    cb(null ,advertiserInfo);
   }
 ], function(err, res){
   console.log(err, res);
