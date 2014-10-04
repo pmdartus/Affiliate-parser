@@ -26,6 +26,7 @@
   "devDependencies": {
     "mocha": "1.18.x",
     "should": "4.0.x",
-    "nock": "0.48.x"
+    "nock": "0.48.x",
+    "mock-kue": "0.0.8"
   }
 }
