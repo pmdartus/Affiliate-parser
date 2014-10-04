@@ -33,6 +33,9 @@ if (fs.existsSync(credentialsPath)) {
   process.exit(1);
 }
 
+var isWorker = process.env.WORKER;
+var isServer = process.env.SERVER;
+
 module.exports = {
   env: nodeEnv,
   port: port,
@@ -40,5 +43,8 @@ module.exports = {
   mongoUrl: mongoUrl,
   redis: redisConfig,
 
-  creds: creds
+  creds: creds,
+
+  isServer: isServer,
+  isWorker: isWorker
 };

@@ -1,10 +1,19 @@
 'use strict';
 
+/**
+ *  Module dependences
+ */
+
 var kue = require('kue');
 var mongoose = require('mongoose');
 var express = require('express');
 
 var config = require('./config');
+var core = require('./lib/core');
+
+/**
+ *  Connect to databases
+ */
 
 mongoose.connect(config.mongoUrl);
 kue.createQueue({
@@ -12,7 +21,19 @@ kue.createQueue({
   redis: config.redis
 });
 
-// Start web server for monitoring
-var app = module.exports = express();
-app.use(kue.app);
-app.listen(config.port);
+/**
+ *  Init crawler
+ */
+
+core.init(config.isServer, config.isWorker);
+
+
+/**
+ *  Start webserver and expose `app`
+ */
+
+if (config.isServer || !config.isWorker) {
+  var app = module.exports = express();
+  app.use(kue.app);
+  app.listen(config.port);
+}
