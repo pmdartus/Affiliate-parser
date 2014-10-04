@@ -19,27 +19,41 @@ describe('[CJ] Handlers', function () {
         crawle: [24, 42, 88]
       };
 
-      var ids;
       async.waterfall([
         function InsertJobs(cb) {
           handlers.enqueueAdvertisers(jobData, cb);
         },
         function retrieveAllJobs(jobIds, cb) {
-          ids = jobIds;
           request(app).get('/stats').end(cb);
         },
         function retrieveSingleJob(res, cb) {
           res.body.inactiveCount.should.be.eql(3);
-          request(app).get('/job/' + ids[1]).end(cb);
+          cb();
+        }
+      ], done);
+    });
+
+    it('should set the right name', function(done) {
+      var jobData = {
+        crawle: [1]
+      };
+
+      async.waterfall([
+        function InsertJobs(cb) {
+          handlers.enqueueAdvertisers(jobData, cb);
+        },
+        function retrieveSingleJob(ids, cb) {
+          request(app).get('/job/' + ids[0]).end(cb);
         },
         function checkTitleAndType(res, cb) {
           res.body.type.should.be.eql('cj:retrive-advertiser-info');
           res.body.data.title.should.containEql('[CJ] - Advertiser');
-          res.body.data.id.should.be.eql(42);
+          res.body.data.id.should.be.eql(1);
 
           cb();
         }
       ], done);
+
     });
   });
 });
