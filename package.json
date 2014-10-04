@@ -19,6 +19,7 @@
   "dependencies": {
     "async": "0.9.0",
     "cheerio": "0.17.0",
+    "express": "~3.1.1",
     "kue": "0.8.9",
     "mongoose": "3.8.17",
     "request": "2.44.0"
@@ -27,6 +28,7 @@
     "mocha": "1.18.x",
     "should": "4.0.x",
     "nock": "0.48.x",
-    "mock-kue": "0.0.8"
+    "mock-kue": "0.0.8",
+    "supertest": "0.14.0"
   }
 }

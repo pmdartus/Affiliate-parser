@@ -2,6 +2,7 @@
 
 var kue = require('kue');
 var mongoose = require('mongoose');
+var express = require('express');
 
 var config = require('./config');
 
@@ -12,4 +13,6 @@ kue.createQueue({
 });
 
 // Start web server for monitoring
-kue.app.listen(config.port);
+var app = module.exports = express();
+app.use(kue.app);
+app.listen(config.port);

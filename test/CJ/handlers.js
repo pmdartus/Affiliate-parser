@@ -1,15 +1,15 @@
 'use strict';
 
-var request = require('request');
+var request = require('supertest');
 var async = require('async');
 
-var config = require('../../config');
+var app = require('../../index.js');
 var handlers = require('../../lib/cj/handlers');
 
 describe('[CJ] Handlers', function () {
 
   describe('EnqueueAdvertisers Handler', function() {
-    it('should equeue the passed advertisers ids', function(done) {
+    it.only('should equeue the passed advertisers ids', function(done) {
       var jobData = {
         crawle: [24, 42, 88]
       };
@@ -21,22 +21,16 @@ describe('[CJ] Handlers', function () {
         },
         function retrieveAllJobs(jobIds, cb) {
           ids = jobIds;
-          var statsUrl = 'http://localhost:' + config.port + '/stats';
-          request.get(statsUrl, cb);
+          request(app).get('/stats').end(cb);
         },
-        function retrieveSingleJob(res, stats, cb) {
-          stats = JSON.parse(stats);
-          stats.inactiveCount.should.be.eql(3);
-
-          var jobUrl = 'http://localhost:' + config.port + '/job/' + ids[1];
-          request.get(jobUrl, cb);
+        function retrieveSingleJob(res, cb) {
+          res.body.inactiveCount.should.be.eql(3);
+          request(app).get('/job/' + ids[1], cb);
         },
-        function checkTitleAndType(res, jobInfo, cb) {
-          jobInfo = JSON.parse(jobInfo);
-
-          jobInfo.type.should.be.eql('cj:retrive-advertiser-info');
-          jobInfo.data.title.should.containEql('[CJ] - Advertiser');
-          jobInfo.data.id.should.be.eql(42);
+        function checkTitleAndType(res, cb) {
+          res.body.type.should.be.eql('cj:retrive-advertiser-info');
+          res.body.data.title.should.containEql('[CJ] - Advertiser');
+          res.body.data.id.should.be.eql(42);
 
           cb();
         }
