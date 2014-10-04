@@ -4,6 +4,7 @@
 
 /**
  *  Start crawler deamon
+ *  Execute: `bin/crawler`
  */
 
 var config = require('../config');

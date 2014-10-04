@@ -1,0 +1,60 @@
+#! /usr/bin/env node
+
+'use strict';
+
+/**
+ * Add an init task for the selected platform
+ * Execute: `bin/add-job [name of the platform]`
+ */
+
+var kue = require('kue');
+var async = require('async');
+var config = require('../config');
+var core = require('../lib/core');
+
+var jobs = kue.createQueue({
+  prefix: 'jobs',
+  redis: config.redis
+});
+
+/**
+ *  Check validity of the command
+ */
+
+var selectedPlatforms = process.argv.filter(function(val, index) {
+  if (index < 2) {
+    return false;
+  }
+
+  if (core.platform.indexOf(val) !== -1) {
+    return true;
+  } else {
+    console.log(val + ' is not a valid platform.');
+    return false;
+  }
+});
+
+if (selectedPlatforms.length === 0) {
+  console.log('No valide plateform hase been found');
+  process.exit(1);
+}
+
+async.each(selectedPlatforms, function(plateformName, cb) {
+  var initTask = require('../lib/' + plateformName).startJob;
+  if (!initTask) {
+    return cb('Impossible to identify the entry task');
+  }
+
+  jobs.create(initTask, {
+    title: '[' + plateformName + '] - Init task'
+  }).save(cb);
+
+}, function(err) {
+  if (err) {
+    console.log(err);
+    process.exit(1);
+  }
+
+  console.log('Jobs has been enqueued.');
+  process.exit(0);
+});
