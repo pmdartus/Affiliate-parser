@@ -5,11 +5,16 @@ var async = require('async');
 
 var app = require('../../index.js');
 var handlers = require('../../lib/cj/handlers');
+var dbHelper = require('../helpers/db');
 
 describe('[CJ] Handlers', function () {
 
+  beforeEach(function(done) {
+    dbHelper.flushRedis(done);
+  });
+
   describe('EnqueueAdvertisers Handler', function() {
-    it.only('should equeue the passed advertisers ids', function(done) {
+    it('should equeue the passed advertisers ids', function(done) {
       var jobData = {
         crawle: [24, 42, 88]
       };
@@ -25,7 +30,7 @@ describe('[CJ] Handlers', function () {
         },
         function retrieveSingleJob(res, cb) {
           res.body.inactiveCount.should.be.eql(3);
-          request(app).get('/job/' + ids[1], cb);
+          request(app).get('/job/' + ids[1]).end(cb);
         },
         function checkTitleAndType(res, cb) {
           res.body.type.should.be.eql('cj:retrive-advertiser-info');
