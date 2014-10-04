@@ -25,7 +25,7 @@ kue.createQueue({
  *  Init crawler
  */
 
-core.init(config.isServer, config.isWorker);
+core.init();
 
 
 /**
