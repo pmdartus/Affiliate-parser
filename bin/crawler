@@ -1,0 +1,16 @@
+#! /usr/bin/env node
+
+'use strict';
+
+/**
+ *  Start crawler deamon
+ */
+
+var config = require('../config');
+require('../index');
+
+if (config.isWorker) {
+  console.log('New crawler worker has been spawned');
+} else if (config.isServer || (!config.isWorker && !config.isServer)) {
+  console.log('Crawler deamon is running running on port: ' + config.port);
+}
