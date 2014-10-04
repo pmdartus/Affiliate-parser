@@ -24,13 +24,10 @@ describe('[CJ] Authenthication helper', function () {
         done();
       });
     });
+
   });
 
   describe('Caching', function() {
-    before(function(done) {
-      nock.cleanAll();
-      done();
-    });
 
     it('should cache the existing informations', function(done) {
       authHelper.retrieveAuthInformations(function(err, cookieJar, userInfo) {
@@ -38,5 +35,6 @@ describe('[CJ] Authenthication helper', function () {
         done();
       });
     });
+
   });
 });
