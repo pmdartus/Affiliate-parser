@@ -1,7 +1,7 @@
 'use strict';
 
 var fs = require('fs');
-
+var path = require('path');
 var url = require('url');
 
 var nodeEnv = process.env.NODE_ENV || 'development';
@@ -25,7 +25,8 @@ if (nodeEnv !== 'production') {
 }
 
 var creds;
-if (fs.existsSync('../keys.json')) {
+var credentialsPath = path.normalize(__dirname + '/../keys.json');
+if (fs.existsSync(credentialsPath)) {
   creds = require('../keys.json');
 } else {
   console.error('Impossible to retrieve file keys.json');
