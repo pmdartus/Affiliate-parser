@@ -50,7 +50,7 @@ async.waterfall([
       $(this).find('td').each(function(i) {
         if (i === 0) {
           advertiser.name = $(this).find('.company').attr('title');
-          advertiser.crawleUrl = $(this).find('a').attr('href');
+          advertiser.id = $(this).find('a').attr('href').match(/\/merchant-profile\/(\d*)/)[1];
         }
 
         if (i === 1) {
