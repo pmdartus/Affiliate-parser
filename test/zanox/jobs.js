@@ -46,7 +46,7 @@ describe('[Zanox] Jobs', function () {
   });
 
   describe('Retrive advertisers informations', function() {
-    it.only('should be able to parse the page', function(done) {
+    it('should be able to parse the page', function(done) {
       var offers = '<div id="merchantKeyFigures"><ul><li><strong>Lead</strong> EUR 0.50</li>';
       offers += '<li><strong>Vente</strong> EUR 1.00 - EUR 19.00</li></ul></div>';
 
@@ -67,6 +67,7 @@ describe('[Zanox] Jobs', function () {
         res.commissions.should.have.a.lengthOf(2);
 
         res.should.have.property('details');
+        done();
       });
     });
   });
