@@ -44,4 +44,30 @@ describe('[Zanox] Jobs', function () {
       });
     });
   });
+
+  describe('Retrive advertisers informations', function() {
+    it.only('should be able to parse the page', function(done) {
+      var offers = '<div id="merchantKeyFigures"><ul><li><strong>Lead</strong> EUR 0.50</li>';
+      offers += '<li><strong>Vente</strong> EUR 1.00 - EUR 19.00</li></ul></div>';
+
+      nock('https://marketplace.zanox.com')
+        .get('/zanox/affiliate/1156722/1193212/merchant-profile/3124')
+        .replyWithFile(200, __dirname + '/files/detailPage.html')
+        .get('/zanox/affiliate/1156722/1193212/merchant-profile/3124/commission-groups')
+        .reply(200, offers);
+
+      jobs.retrieveAdvertiserInfo({
+        id: 3124
+      }, function(err, res) {
+        if (err) {
+          return done(err);
+        }
+
+        res.should.have.property('commissions');
+        res.commissions.should.have.a.lengthOf(2);
+
+        res.should.have.property('details');
+      });
+    });
+  });
 });
