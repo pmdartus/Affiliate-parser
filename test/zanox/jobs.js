@@ -62,7 +62,9 @@ describe('[Zanox] Jobs', function () {
         .reply(200, offers);
 
       jobs.retrieveAdvertiserInfo({
-        id: 3124
+        advertiser: {
+          id: 3124
+        }
       }, function(err, res) {
         if (err) {
           return done(err);
