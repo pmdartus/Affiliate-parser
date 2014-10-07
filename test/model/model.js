@@ -26,10 +26,7 @@ describe('RawExtract model', function () {
 
       res.should.have.property('id', '1');
       res.should.have.property('platform', 'cj');
-      res.should.have.property('extractedData');
-
-      res.should.have.property('created');
-      res.should.have.property('updated');
+      res.should.have.properties('data', 'created', 'updated');
 
       done();
     });
@@ -44,12 +41,14 @@ describe('RawExtract model', function () {
         RawExtract.findAndUpdate(1, 'cj', {foo: 'foo'}, cb);
       },
       function(res, cb) {
-        res.extractedData.foo.should.be.eql('foo');
+        res.should.have.property('data');
+        res.data.should.have.property('foo', 'foo');
 
         RawExtract.find({}, cb);
       },
       function(res, cb) {
         res.should.have.a.lengthOf(1);
+        res[0].should.have.properties('data', 'created', 'updated');
         cb();
       }
     ], done);
