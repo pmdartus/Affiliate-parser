@@ -1,7 +1,7 @@
 'use strict';
 
 var nock = require('nock');
-var authHelper = require('../../lib/CJ/auth');
+var authHelper = require('../../lib/cj/auth');
 
 describe('[CJ] Authenthication helper', function () {
 
