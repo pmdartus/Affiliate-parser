@@ -34,47 +34,55 @@ describe('[CJ] Jobs', function () {
       .reply(200, res);
 
     jobs.retriveAllAdvertisers(function(err, res) {
-      if (err) {
-        done(err);
-      }
-
       res.advertisers.should.have.a.lengthOf(2);
-      done();
+      done(err);
     });
   });
 
   it('should return informations from a single advertiser', function(done) {
     nock('https://members.cj.com')
-      .get('/member/advertiser/1/detail.json')
-      .reply(200, {advertiser: {organization: 'Foobar', programmUrl: 'A simple programm'}} )
-      .get('/member/api/publisher/4406512/merchant/1/commissionsByCountry')
-      .reply(200, {countryMetrics:[{countryCode: 'FR'}] })
-      .get('/member/advertiser/1/contact/4406512.json')
-      .reply(200, {contact: {}})
+      .get('/member/publisher/4406512/advertiserSearch.json?advertiserIds=1')
+      .reply(200, {
+        totalResults: 1,
+        advertisers: [
+          {
+            name: 'foobar',
+            programTerms: [{ id: 1 }, { id: 2 }]
+          }
+        ]
+      })
       .get('/member/publisher/4406512/programterms/1.json')
       .reply(200, {
-        saleMaxPercent: 0.07,
-        saleMinPercent: 0.03,
-        actionTermsList:[{
-          defaultCommission: {
-            type: "percent",
-            commission: 0.05
-          }
-        }]
+        name: 'Premium plan'
+      })
+      .get('/member/publisher/4406512/programterms/2.json')
+      .reply(200, {
+        name: 'Basic plan'
       });
 
     jobs.retrieveAdvertiserInfo(1, function(err, res) {
-      if (err) {
-        return done(err);
-      }
+      res.should.have.property('name', 'foobar');
+      res.should.have.property('programTerms');
 
-      res.should.have.property('details');
-      res.should.have.property('comissionByCountry');
-      res.should.have.property('contact');
-      res.should.have.property('programTerm');
+      res.programTerms.should.have.a.lengthOf(2);
+      res.programTerms.should.containEql({name: 'Basic plan'});
+      res.programTerms.should.containEql({name: 'Premium plan'});
 
-      done();
+      done(err);
     });
   });
 
+  it('should return an error if several advertisers has been found', function(done) {
+    nock('https://members.cj.com')
+      .get('/member/publisher/4406512/advertiserSearch.json?advertiserIds=1')
+      .reply(200, {
+        totalResults: 0,
+        advertisers: []
+      });
+
+    jobs.retrieveAdvertiserInfo(1, function(err) {
+      err.should.be.ok;
+      done();
+    });
+  });
 });

@@ -19,7 +19,7 @@ describe('[CJ] Authenthication helper', function () {
     });
 
     it('should store informations in the cookieJar', function(done) {
-      authHelper.retrieveAuthInformations(function(err, cookieJar, userInfo) {
+      authHelper.retrieveAuthInformations(function(err, userInfo) {
         userInfo.companyId.should.be.eql('4406512');
         done();
       });
@@ -30,7 +30,7 @@ describe('[CJ] Authenthication helper', function () {
   describe('Caching', function() {
 
     it('should cache the existing informations', function(done) {
-      authHelper.retrieveAuthInformations(function(err, cookieJar, userInfo) {
+      authHelper.retrieveAuthInformations(function(err, userInfo) {
         userInfo.companyId.should.be.eql('4406512');
         done();
       });
