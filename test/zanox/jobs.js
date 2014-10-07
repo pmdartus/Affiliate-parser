@@ -59,7 +59,11 @@ describe('[Zanox] Jobs', function () {
         .get('/zanox/affiliate/1156722/1193212/merchant-profile/3124')
         .replyWithFile(200, __dirname + '/files/detailPage.html')
         .get('/zanox/affiliate/1156722/1193212/merchant-profile/3124/commission-groups')
-        .reply(200, offers);
+        .reply(200, offers)
+        .get('/zanox/affiliate/1156722/1193212/merchant-profile/3124/xhr-commission-group-search/page/1')
+        .replyWithFile(200, __dirname + '/files/comissionsDetailPage1.html')
+        .get('/zanox/affiliate/1156722/1193212/merchant-profile/3124/xhr-commission-group-search/page/2')
+        .replyWithFile(200, __dirname + '/files/comissionsDetailPage2.html');
 
       jobs.retrieveAdvertiserInfo({
         advertiser: {
@@ -70,10 +74,13 @@ describe('[Zanox] Jobs', function () {
           return done(err);
         }
 
-        res.should.have.property('commissions');
-        res.commissions.should.have.a.lengthOf(2);
+        res.should.have.property('comissions');
+        res.comissions.should.have.properties('defaultComissions', 'comissionsItems');
+        res.comissions.defaultComissions.should.have.a.lengthOf(2);
+        res.comissions.comissionsItems.should.have.a.lengthOf(18);
 
         res.should.have.property('details');
+        res.details.should.have.properties('name', 'id', 'image', 'shortDescription', 'longDescription', 'contact', 'url', 'cookies');
         done();
       });
     });
