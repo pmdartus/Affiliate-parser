@@ -4,7 +4,7 @@ var async = require('async');
 var mongoose =require('mongoose');
 var dbHelper = require('../helpers/db');
 
-require('../../lib/model');
+require('../../lib/models/raw-extract');
 var RawExtract = mongoose.model('RawExtract');
 
 describe('RawExtract model', function () {
