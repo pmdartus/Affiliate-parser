@@ -158,34 +158,34 @@ async.waterfall([
       }
     }, cb);
   },
-  // function welcomePage (res, body, cb) {
-  //   request({
-  //     url: 'http://login.tradedoubler.com/pan/aProgramList.action',
-  //     method: 'GET',
-  //     headers: {
-  //       "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36"
-  //     },
-  //     jar: cookieJar
-  //   }, function(err, res, body) {
-  //     if (err) {
-  //       return cb(err);
-  //     }
+  function welcomePage (res, body, cb) {
+    request({
+      url: 'http://login.tradedoubler.com/pan/aProgramList.action',
+      method: 'GET',
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 Safari/537.36"
+      },
+      jar: cookieJar
+    }, function(err, res, body) {
+      if (err) {
+        return cb(err);
+      }
 
-  //     var $ = cheerio.load(body);
+      var $ = cheerio.load(body);
 
-  //     var siteIds = [];
-  //     $('[name="programGEListParameterTransport.siteId"] option').each(function() {
-  //       siteIds.push($(this).attr('value'));
-  //     });
+      var siteIds = [];
+      $('[name="programGEListParameterTransport.siteId"] option').each(function() {
+        siteIds.push($(this).attr('value'));
+      });
 
-  //     cb(null, siteIds);
-  //   });
-  // },
-  // function retreiveInfoList (ids, cb) {
-  //   // var siteId = ids[0];
-  //   var siteId = 1428793;
-  //   advertisersListFromSiteId(siteId, cb);
-  // },
+      cb(null, siteIds);
+    });
+  },
+  function retreiveInfoList (ids, cb) {
+    // var siteId = ids[0];
+    var siteId = 1428793;
+    advertisersListFromSiteId(siteId, cb);
+  },
   function retriveAnAdvertiser (res, body, cb) {
     var url = 'http://login.tradedoubler.com/pan/aProgramInfoApplyRead.action?programId=210819&affiliateId=1428793';
     advertiserFromCrawleUrl(url, cb);
