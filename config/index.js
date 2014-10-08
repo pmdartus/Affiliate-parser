@@ -25,13 +25,18 @@ if (nodeEnv !== 'production') {
 }
 
 var creds;
-var credentialsPath = path.normalize(__dirname + '/../keys.json');
-if (fs.existsSync(credentialsPath)) {
-  creds = require('../keys.json');
+if (nodeEnv !== 'test') {
+  var credentialsPath = path.normalize(__dirname + '/../keys.json');
+  if (fs.existsSync(credentialsPath)) {
+    creds = require('../keys.json');
+  } else {
+    console.error('Impossible to retrieve file keys.json');
+    process.exit(1);
+  }
 } else {
-  console.error('Impossible to retrieve file keys.json');
-  process.exit(1);
+  creds = require('../test/test-keys.json');
 }
+
 
 var isWorker = process.env.WORKER;
 var isServer = process.env.SERVER;
