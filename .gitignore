@@ -5,3 +5,5 @@ dump.rdb
 dump
 
 .DS_Store
+.vagrant
+logs
